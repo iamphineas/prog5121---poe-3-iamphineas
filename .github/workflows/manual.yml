@@ -1,0 +1,46 @@
+name: TestPROGPOE
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: List contents
+        run: ls
+
+      - name: Compile classes
+        working-directory: ./src
+        run: |
+          javac -cp "../lib/junit-platform-console-standalone-1.6.0.jar" ./POEFINAL/Login.java ./POEFINAL/POEFINAL.java ./POEPART01/Par3.java "../test/POEFINAL/LoginTest.java"
+
+      - name: List contents of src directory after compile
+        working-directory: ./src/POEFINAL
+        run: ls
+
+      - name: Copy compiled classes to test resources directory
+        working-directory: ./src/POEFINAL
+        run: cp -t "../../test/POEFINAL" Login.class POEFINAL.class Part3.class 
+
+      - name: Copy compiled test classes to test resources directory
+        working-directory: ./test/POEFINAL
+        run: |
+          if [ ! -f "../../test/POEFINAL/LoginTest.class" ]; then
+            cp LoginTest.class "../../test/POEFINAL/LoginTest.class"
+          fi
+
+      - name: List contents of test package
+        working-directory: ./test/POEFINAL
+        run: ls
+
+      - name: Run LoginTest and generate report
+        working-directory: ./test
+        run: java -jar "../lib/junit-platform-console-standalone-1.6.0.jar" -cp "." --select-class POEFINAL.LoginTest
